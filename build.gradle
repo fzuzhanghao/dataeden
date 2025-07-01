@@ -1,0 +1,75 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'io.freefair.lombok' version '8.4'
+}
+
+group = 'team.zhh'
+version = '1.0.0'
+sourceCompatibility = '17'
+
+repositories {
+    mavenLocal()
+    maven { url 'https://maven.aliyun.com/nexus/content/repositories/google' }
+    maven { url 'https://maven.aliyun.com/nexus/content/groups/public' }
+    maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter'}
+}
+// 直接用def定义变量
+def httpclientVersion = '4.5.14'
+def jacksonVersion = '2.15.4'
+def mysqlVersion = '8.0.33'
+def postgresqlVersion = '42.6.0'
+
+dependencies {
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Database Drivers
+    implementation "com.mysql:mysql-connector-j:$mysqlVersion"
+    implementation "org.postgresql:postgresql:$postgresqlVersion"
+
+    // HTTP Client
+    implementation "org.apache.httpcomponents:httpclient:$httpclientVersion"
+
+    // JSON Processing
+    implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// 确保Lombok注解处理器在编译时运行
+tasks.withType(JavaCompile) {
+    options.compilerArgs += [
+        '-parameters',
+        '-Xlint:unchecked',
+        '-Xlint:deprecation'
+    ]
+}
+// task wrapper(type: Wrapper) {
+//     gradleVersion = '8.12'
+// }
+// 配置可执行JAR
+bootJar {
+    archiveFileName = "data-generator.jar"
+    exclude('**/lombok/*')
+}
+
+// 配置Java版本兼容
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
