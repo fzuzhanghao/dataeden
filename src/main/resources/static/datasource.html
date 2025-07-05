@@ -206,7 +206,7 @@
                                                     <span v-else class="badge bg-secondary">否</span>
                                                 </td>
                                                 <td>
-                                                    <span v-if="col.requiresGeneration" class="badge bg-info">是</span>
+                                                    <span v-if="!col.primaryKey" class="badge bg-info">是</span>
                                                     <span v-else class="badge bg-secondary">否</span>
                                                 </td>
                                             </tr>

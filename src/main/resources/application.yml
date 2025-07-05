@@ -16,4 +16,5 @@ spring:
 #    pool-name: HikariCP
 #    max-lifetime: 60000
 #    connection-timeout: 30000
-
+deepsk:
+  mykey: 

@@ -11,15 +11,14 @@ sourceCompatibility = '17'
 
 repositories {
     mavenLocal()
-    maven { url 'https://maven.aliyun.com/nexus/content/repositories/google' }
     maven { url 'https://maven.aliyun.com/nexus/content/groups/public' }
-    maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter'}
 }
 // 直接用def定义变量
 def httpclientVersion = '4.5.14'
 def jacksonVersion = '2.15.4'
 def mysqlVersion = '8.0.33'
 def postgresqlVersion = '42.6.0'
+def fastjsonVersion = '2.0.57'
 
 dependencies {
     // Spring Boot Starters
@@ -37,6 +36,8 @@ dependencies {
 
     // JSON Processing
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+
+    implementation "com.alibaba.fastjson2:fastjson2:$fastjsonVersion"
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
