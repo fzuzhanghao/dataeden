@@ -9,83 +9,284 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
             padding: 20px;
         }
+        
         .card {
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-            margin-bottom: 20px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             border: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            max-width: 800px;
+            width: 100%;
         }
+        
         .card-header {
-            background: rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0 !important;
+            border: none;
+            padding: 20px 30px;
+            font-weight: 600;
+            font-size: 1.2rem;
         }
+        
+        .card-body {
+            padding: 30px;
+        }
+        
         .form-control {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            color: #495057;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
         }
+        
         .form-control:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+            background: white;
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            color: #495057;
+        }
+        
+        .form-label {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .form-text {
+            color: #6c757d !important;
+            font-size: 0.875rem;
+        }
+        
+        .btn {
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        .btn-primary {
-            background: #2575fc;
-            border: none;
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
+        
         .btn-success {
-            background: #00b09b;
-            border: none;
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
         }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(86, 171, 47, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+        }
+        
+        .btn-outline-info {
+            border: 2px solid #17a2b8;
+            color: #17a2b8;
+            background: transparent;
+        }
+        
+        .btn-outline-info:hover {
+            background: #17a2b8;
+            color: white;
+        }
+        
         .table-container {
             max-height: 400px;
             overflow-y: auto;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
         }
+        
+        .table {
+            margin-bottom: 0;
+            background: white;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .table td {
+            color: #495057;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        .table-primary {
+            background-color: rgba(102, 126, 234, 0.1) !important;
+            border-left: 4px solid #667eea;
+        }
+        
         .step {
             display: none;
+            animation: fadeIn 0.5s ease-in-out;
         }
+        
         .step.active {
             display: block;
         }
-        .table-hover tbody tr:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            cursor: pointer;
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .table th, .table td {
+        
+        .nav-pills {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 5px;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 10px;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 10px 20px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            vertical-align: middle;
+            transform: scale(1.05);
         }
-        .progress {
-            height: 10px;
-            margin-top: 10px;
+        
+        .nav-pills .nav-link:not(.active):hover {
+            background: #e9ecef;
+            color: #495057;
         }
+        
         .status-badge {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+        
         .status-connected {
-            background: rgba(40, 167, 69, 0.2);
-            color: #28a745;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
         }
+        
         .status-disconnected {
-            background: rgba(220, 53, 69, 0.2);
-            color: #dc3545;
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+        
+        .badge {
+            border-radius: 8px;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+        }
+        
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            border: none;
+        }
+        
+        .modal-body {
+            background: white;
+            color: #495057;
+        }
+        
+        .btn-close-white {
+            filter: invert(1);
+        }
+        
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 20px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .nav-pills .nav-link {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="app" class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card bg-dark text-white mb-4">
+    <div id="app" class="main-container">
+        <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>DataEden</span>
                         <span class="status-badge" :class="{
@@ -144,7 +345,7 @@
                             <div class="mb-3">
                                 <label class="form-label">选择数据表</label>
                                 <div class="table-container">
-                                    <table class="table table-dark table-hover">
+                                    <table class="table table-hover">
                                         <thead>
                                             <tr>
                                                 <th>表名</th>
@@ -181,7 +382,7 @@
                                 <h5 class="mb-3">表: {{ selectedTable }}</h5>
                                 
                                 <div class="table-container mb-4">
-                                    <table class="table table-dark">
+                                    <table class="table">
                                         <thead>
                                             <tr>
                                                 <th>字段名</th>
@@ -249,14 +450,14 @@
                 <!-- 表结构预览模态框 -->
                 <div class="modal fade" id="tablePreviewModal" tabindex="-1">
                     <div class="modal-dialog modal-lg">
-                        <div class="modal-content bg-dark text-white">
+                                                    <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">表结构预览: {{ previewTableName }}</h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="table-container">
-                                    <table class="table table-dark">
+                                    <table class="table">
                                         <thead>
                                             <tr>
                                                 <th>字段名</th>
