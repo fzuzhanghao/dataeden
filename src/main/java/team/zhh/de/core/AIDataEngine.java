@@ -68,17 +68,20 @@ public class AIDataEngine implements IDataEngine {
         ObjectMapper mapper = new ObjectMapper();
         CloseableHttpClient httpClient = HttpClients.createDefault();
         List<String[]> dataList = new ArrayList<>();
+        
         for (int i = 0; i < rowCount; i++) {
-            StringBuffer stringBuffer = new StringBuffer();
-            // 为每个字段生成数据
-            for (int j = 0; j < columns.size(); j++) {
-                ColumnMetadata col = columns.get(j);
-                String generatedValue = generateValueViaAPI(col, httpClient, mapper);
-                stringBuffer.append(",").append(generatedValue);
-
-                dataList.add(stringBuffer.toString().replaceFirst(",","").split(","));
+            List<String> row = new ArrayList<>();
+            // 为每个需要生成的字段生成数据
+            for (ColumnMetadata col : columns) {
+                if (col.requiresGeneration()) {
+                    String generatedValue = generateValueViaAPI(col, httpClient, mapper);
+                    row.add(generatedValue);
+                }
             }
+            dataList.add(row.toArray(new String[0]));
         }
+        
+        httpClient.close();
         return dataList;
     }
 }

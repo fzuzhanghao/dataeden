@@ -22,7 +22,7 @@ public record ColumnMetadata(
 
 
     public ColumnMetadata(String colName, String typeName, int size, int digit, boolean isPrimaryKey, boolean isAutoIncrement, boolean isNullable) {
-        this(colName, typeName, size, digit, isNullable, typeName, isAutoIncrement, isPrimaryKey, isNullable, null);
+        this(colName, typeName, size, digit, isNullable, null, isAutoIncrement, isPrimaryKey, false, determineDataTypeCategory(typeName));
     }
 
     // 数据类型分类枚举
@@ -73,12 +73,12 @@ public record ColumnMetadata(
         
         String upperType = typeName.toUpperCase();
         return switch (upperType) {
-            case "VARCHAR", "CHAR", "TEXT", "NVARCHAR", "STRING" -> DataTypeCategory.STRING;
-            case "INT", "INTEGER", "BIGINT", "SMALLINT", "TINYINT" -> DataTypeCategory.INTEGER;
-            case "DECIMAL", "NUMERIC", "FLOAT", "DOUBLE", "REAL" -> DataTypeCategory.FLOAT;
-            case "DATE", "TIME", "DATETIME", "TIMESTAMP" -> DataTypeCategory.DATE;
-            case "BIT", "BOOLEAN" -> DataTypeCategory.BOOLEAN;
-            case "BLOB", "BINARY", "VARBINARY" -> DataTypeCategory.BINARY;
+            case "VARCHAR", "CHAR", "TEXT", "NVARCHAR", "STRING", "BPCHAR" -> DataTypeCategory.STRING;
+            case "INT", "INTEGER", "BIGINT", "SMALLINT", "TINYINT", "INT2", "INT4", "INT8", "SERIAL", "BIGSERIAL" -> DataTypeCategory.INTEGER;
+            case "DECIMAL", "NUMERIC", "FLOAT", "DOUBLE", "REAL", "MONEY" -> DataTypeCategory.FLOAT;
+            case "DATE", "TIME", "DATETIME", "TIMESTAMP", "TIMESTAMPTZ" -> DataTypeCategory.DATE;
+            case "BIT", "BOOLEAN", "BOOL" -> DataTypeCategory.BOOLEAN;
+            case "BLOB", "BINARY", "VARBINARY", "BYTEA" -> DataTypeCategory.BINARY;
             default -> DataTypeCategory.UNKNOWN;
         };
     }
@@ -92,9 +92,9 @@ public record ColumnMetadata(
     }
 
     /**
-     * 是否需要生成数据（非自增列）
+     * 是否需要生成数据（非自增列且非主键）
      */
     public boolean requiresGeneration() {
-        return !primaryKey;
+        return !autoIncrement && !primaryKey;
     }
 }

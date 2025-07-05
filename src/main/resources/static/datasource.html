@@ -334,18 +334,32 @@
                 const connectDatabase = async () => {
                     connecting.value = true;
                     try {
-                        const response = await axios.post('/api/connect', dbConfig.value);
-                        connected.value = response.data;
+                        const response = await axios.post('/api/connect', {
+                            url: dbConfig.value.url,
+                            username: dbConfig.value.username,
+                            password: dbConfig.value.password
+                        });
                         
-                        if (connected.value) {
+                        if (response.data.code === 0) {
+                            connected.value = true;
                             // 获取表列表
-                            const tablesResponse = await axios.get('/api/tables');
-                            tables.value = tablesResponse.data;
-                            step.value = 2;
+                            const tablesResponse = await axios.post('/api/tables/getTables', {
+                                url: dbConfig.value.url,
+                                username: dbConfig.value.username,
+                                password: dbConfig.value.password
+                            });
+                            if (tablesResponse.data.code === 0) {
+                                tables.value = tablesResponse.data.data;
+                                step.value = 2;
+                            } else {
+                                alert('获取表列表失败: ' + tablesResponse.data.message);
+                            }
+                        } else {
+                            alert('数据库连接失败: ' + response.data.message);
                         }
                     } catch (error) {
                         console.error('连接失败:', error);
-                        alert('数据库连接失败: ' + error.message);
+                        alert('数据库连接失败: ' + (error.response?.data?.message || error.message));
                     } finally {
                         connecting.value = false;
                     }
@@ -356,26 +370,46 @@
                     tableSelected.value = true;
                     
                     try {
-                        const response = await axios.get(`/api/tables/${table}/columns`);
-                        columns.value = response.data;
+                        const response = await axios.post('/api/tables/getTableColumns', {
+                            url: dbConfig.value.url,
+                            username: dbConfig.value.username,
+                            password: dbConfig.value.password,
+                            tableName: table
+                        });
+                        
+                        if (response.data.code === 0) {
+                            columns.value = response.data.data;
+                        } else {
+                            alert('获取表结构失败: ' + response.data.message);
+                        }
                     } catch (error) {
                         console.error('获取表结构失败:', error);
-                        alert('获取表结构失败: ' + error.message);
+                        alert('获取表结构失败: ' + (error.response?.data?.message || error.message));
                     }
                 };
                 
                 const previewTable = async (table) => {
                     previewTableName.value = table;
                     try {
-                        const response = await axios.get(`/api/tables/${table}/columns`);
-                        previewColumns.value = response.data;
+                        const response = await axios.post('/api/tables/getTableColumns', {
+                            url: dbConfig.value.url,
+                            username: dbConfig.value.username,
+                            password: dbConfig.value.password,
+                            tableName: table
+                        });
                         
-                        // 显示模态框
-                        const modal = new bootstrap.Modal(document.getElementById('tablePreviewModal'));
-                        modal.show();
+                        if (response.data.code === 0) {
+                            previewColumns.value = response.data.data;
+                            
+                            // 显示模态框
+                            const modal = new bootstrap.Modal(document.getElementById('tablePreviewModal'));
+                            modal.show();
+                        } else {
+                            alert('获取表结构失败: ' + response.data.message);
+                        }
                     } catch (error) {
                         console.error('获取表结构失败:', error);
-                        alert('获取表结构失败: ' + error.message);
+                        alert('获取表结构失败: ' + (error.response?.data?.message || error.message));
                     }
                 };
                 
@@ -386,13 +420,23 @@
                     generationResult.value = '';
                     
                     try {
-                        const response = await axios.post(
-                            `/api/generate/${selectedTable.value}?rows=${rowsToGenerate.value}&engineType=${engineType.value}`
-                        );
-                        generationResult.value = response.data;
+                        const response = await axios.post('/api/generateData', {
+                            url: dbConfig.value.url,
+                            username: dbConfig.value.username,
+                            password: dbConfig.value.password,
+                            tableName: selectedTable.value,
+                            rows: rowsToGenerate.value.toString(),
+                            engineType: engineType.value
+                        });
+                        
+                        if (response.data.code === 0) {
+                            generationResult.value = response.data.data;
+                        } else {
+                            generationResult.value = '数据生成失败: ' + response.data.message;
+                        }
                     } catch (error) {
                         console.error('数据生成失败:', error);
-                        generationResult.value = '数据生成失败: ' + error.message;
+                        generationResult.value = '数据生成失败: ' + (error.response?.data?.message || error.message);
                     } finally {
                         generating.value = false;
                     }

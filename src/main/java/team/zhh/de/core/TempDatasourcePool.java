@@ -1,6 +1,6 @@
 package team.zhh.de.core;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Component;
 import team.zhh.de.config.DatabaseConfig;
 
@@ -13,7 +13,6 @@ public class TempDatasourcePool {
     private final Map<String, DataSource> pool = new ConcurrentHashMap<>();
     private final DatabaseConfig databaseConfig;
 
-    @Autowired
     public TempDatasourcePool(DatabaseConfig databaseConfig) {
         this.databaseConfig = databaseConfig;
     }

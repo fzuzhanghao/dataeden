@@ -15,16 +15,10 @@ import java.util.*;
 @Service
 public class DatabaseService {
 
-    private final DatabaseConfig databaseConfig;
 
     @Autowired
     private TempDatasourcePool tempDatasourcePool;
 
-    @Autowired
-    public DatabaseService(DatabaseConfig databaseConfig, TempDatasourcePool tempDatasourcePool) {
-        this.databaseConfig = databaseConfig;
-        this.tempDatasourcePool = tempDatasourcePool;
-    }
 
     public boolean connect(String url, String username, String password) {
         try {
@@ -60,6 +54,7 @@ public class DatabaseService {
             if (schema == null) {
                 schema = conn.getSchema();
             }
+            System.out.println("Debug: Extracted schema = " + schema);
         }
         return schema;
     }
@@ -86,26 +81,33 @@ public class DatabaseService {
         DataSource dataSource = tempDatasourcePool.getDataSource(url, username, password);
         try {
             String schema = getCurrentSchema(dataSource, url);
+            System.out.println("Debug: Schema = " + schema + ", Table = " + tableName);
+            
             try (Connection conn = dataSource.getConnection();
                  ResultSet rs = conn.getMetaData().getColumns(null, schema, tableName, null)) {
                 List<String> primaryKeys = getPrimaryKeys(conn, schema, tableName);
+                System.out.println("Debug: Primary keys = " + primaryKeys);
+                
                 while (rs.next()) {
                     String colName = rs.getString("COLUMN_NAME");
                     String typeName = rs.getString("TYPE_NAME");
                     int size = rs.getInt("COLUMN_SIZE");
-                    int digit = rs.getInt("DIGIT_SIZE");
+                    int digit = rs.getInt("DECIMAL_DIGITS");
                     int nullableFlag = rs.getInt("NULLABLE");
                     boolean isNullable = (nullableFlag == DatabaseMetaData.columnNullable);
                     boolean isAutoIncrement = "YES".equals(rs.getString("IS_AUTOINCREMENT"));
                     boolean isPrimaryKey = primaryKeys.contains(colName);
 
+                    System.out.println("Debug: Column = " + colName + ", Type = " + typeName + ", Size = " + size + ", Digits = " + digit);
+                    
                     columns.add(new ColumnMetadata(
-                        colName, typeName, size,digit,
+                        colName, typeName, size, digit,
                         isPrimaryKey, isAutoIncrement, isNullable
                     ));
                 }
             }
         } catch (SQLException e) {
+            System.err.println("Error getting table columns: " + e.getMessage());
             e.printStackTrace();
         }
         return columns;

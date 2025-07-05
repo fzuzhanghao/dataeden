@@ -14,6 +14,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ApiResponse<String> handleException(Exception ex) {
+        ex.printStackTrace();
         return ApiResponse.error(5000, "服务器内部错误: " + ex.getMessage());
     }
 }
