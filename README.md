@@ -1,5 +1,6 @@
 仿真数据生成器
 
+建议演示情况（10-50条数据）用ai引擎生成高度拟真数据，测试性能情况（100万以上数据）使用随机引擎生成。
 
 基于gradle+spring boot3构建，直接找到主类DataEdenApplication运行即可，需要在application.yml使用你自己的api_key
 前端cdn方式使用vue，挂在static下
