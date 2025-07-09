@@ -22,9 +22,16 @@ public class AIDataEngine implements IDataEngine {
     private static final Logger logger = LoggerFactory.getLogger(AIDataEngine.class);
     
     // 配置参数
-    private static final String DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
+    @Value("${deepsk.api_url}")
+    private String DEEPSEEK_API_URL;
     @Value("${deepsk.mykey}")
     private String API_KEY;
+    @Value("${deepsk.max_tokens}")
+    private int maxTokens;
+    @Value("${deepsk.temperature}")
+    private double temperature;
+    @Value("${deepsk.model}")
+    private String model;
     private static final int BATCH_SIZE = 1000;
 
     @Override
@@ -45,12 +52,15 @@ public class AIDataEngine implements IDataEngine {
             
             // 构建一次性生成所有数据的提示词
             String prompt = buildBulkDataPrompt(tableName, columnsToGenerate, rowCount);
+            logger.debug("prompt: {}", prompt);
             logger.info("AI Engine - 开始生成 {} 行数据，共 {} 列", rowCount, columnsToGenerate.size());
             logger.info("AI Engine - 表名: {}", tableName);
             
             // 调用API生成所有数据
             String csvData = generateBulkDataViaAPI(prompt, httpClient);
+            
             logger.info("AI Engine - 接收到CSV数据，长度: {} 字符", csvData.length());
+            logger.debug("csvData: {}", csvData);
             
             // 解析CSV数据
             dataList = parseCSVData(csvData, rowCount, columnsToGenerate.size());
@@ -74,10 +84,10 @@ public class AIDataEngine implements IDataEngine {
         message.put("role", "user");
         message.put("content", prompt);
         body.put("messages", Arrays.asList(message));
-        body.put("max_tokens", 100); // 增加token数量以支持更多数据
-        body.put("temperature", 0.7);
+        body.put("max_tokens", maxTokens); // 增加token数量以支持更多数据
+        body.put("temperature", temperature);
         body.put("stream", false);
-        body.put("model", "deepseek-chat");
+        body.put("model", model);
 
         request.setEntity(new StringEntity(JSONObject.toJSONString(body)));
         CloseableHttpResponse response = httpClient.execute(request);
@@ -112,7 +122,7 @@ public class AIDataEngine implements IDataEngine {
     // 构建批量数据生成提示词
     private static String buildBulkDataPrompt(String tableName, List<ColumnMetadata> columns, int rowCount) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("请为表 '").append(tableName).append("' 生成 ").append(rowCount).append(" 行真实数据。\n\n");
+        prompt.append("请为下表生成 ").append(rowCount).append(" 行真实数据，禁止添加其他列\n\n");
         prompt.append("表结构：\n");
         
         for (ColumnMetadata col : columns) {
@@ -127,45 +137,41 @@ public class AIDataEngine implements IDataEngine {
             prompt.append(" - ").append(inferDataPurpose(col)).append("\n");
         }
         
-        prompt.append("\n要求：\n");
+        prompt.append("\n严格要求：\n");
         prompt.append("1. 生成恰好 ").append(rowCount).append(" 行数据\n");
         prompt.append("2. 以CSV格式返回数据，使用逗号作为分隔符\n");
-        prompt.append("3. 不要包含列标题\n");
-        prompt.append("4. 每行数据单独一行\n");
-        prompt.append("5. 如果值包含逗号，请用双引号包围\n");
-        prompt.append("6. 确保数据类型与列规格匹配\n");
-        prompt.append("7. 日期使用 YYYY-MM-DD 格式\n");
-        prompt.append("8. 布尔值使用 true/false\n");
-        prompt.append("9. 数值类型请遵守精度和小数位数\n");
-        prompt.append("10. 生成的数据要真实、合理、多样化\n");
-        
-        prompt.append("\n示例格式：\n");
-        prompt.append("值1,值2,值3\n");
-        prompt.append("值4,值5,值6\n");
-        prompt.append("...\n");
-        
-        prompt.append("\n现在开始生成数据：");
+        prompt.append("3. 不要包含列标题，不需要多余内容，直接输出数据\n");
+        prompt.append("4. 如果值包含逗号，请用双引号包围\n");
+        prompt.append("5. 认真核对表结构，表总共有").append(columns.size()).append("列，禁止添加其他列。此外还需要确保数据类型与列规格匹配\n");
+        prompt.append("6. 日期使用 YYYY-MM-DD 格式、布尔值使用 true/false、数值类型请遵守精度和小数位数\n");
         
         return prompt.toString();
     }
 
     // 解析CSV数据
     private static List<String[]> parseCSVData(String csvData, int expectedRows, int expectedColumns) {
+        // 处理以```包裹的情况
+        String trimmed = csvData.trim();
+        if (trimmed.startsWith("```") ) {
+            int start = trimmed.indexOf("```") + 3;
+            int end = trimmed.lastIndexOf("```", trimmed.length() - 1);
+            if (end > start) {
+                trimmed = trimmed.substring(start, end).trim();
+            } else {
+                trimmed = trimmed.substring(start).trim();
+            }
+        }
         List<String[]> dataList = new ArrayList<>();
-        String[] lines = csvData.split("\n");
-        
+        String[] lines = trimmed.split("\n");
         for (String line : lines) {
             line = line.trim();
             if (line.isEmpty()) continue;
-            
             // 简单的CSV解析（处理逗号分隔，支持双引号包围的值）
             List<String> values = new ArrayList<>();
             StringBuilder currentValue = new StringBuilder();
             boolean inQuotes = false;
-            
             for (int i = 0; i < line.length(); i++) {
                 char c = line.charAt(i);
-                
                 if (c == '"') {
                     inQuotes = !inQuotes;
                 } else if (c == ',' && !inQuotes) {
@@ -175,23 +181,23 @@ public class AIDataEngine implements IDataEngine {
                     currentValue.append(c);
                 }
             }
-            
             // 添加最后一个值
             values.add(currentValue.toString().trim());
-            
-            // 确保列数匹配
-            if (values.size() == expectedColumns) {
+            // 严格保障列数，多余的列丢弃，少于则警告并跳过
+            if (values.size() > expectedColumns) {
+                logger.warn("CSV解析警告: 行有 {} 列，期望 {} 列，多余部分已丢弃", values.size(), expectedColumns);
+                values = values.subList(0, expectedColumns);
+                dataList.add(values.toArray(new String[0]));
+            } else if (values.size() == expectedColumns) {
                 dataList.add(values.toArray(new String[0]));
             } else {
-                logger.warn("CSV解析警告: 行有 {} 列，期望 {} 列", values.size(), expectedColumns);
+                logger.warn("CSV解析警告: 行有 {} 列，期望 {} 列，已跳过该行", values.size(), expectedColumns);
             }
         }
-        
         // 确保行数匹配
         if (dataList.size() != expectedRows) {
             logger.warn("CSV解析警告: 生成了 {} 行，期望 {} 行", dataList.size(), expectedRows);
         }
-        
         return dataList;
     }
 

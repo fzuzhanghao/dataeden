@@ -19,11 +19,7 @@ public class DatabaseConfig {
         DRIVER_MAP.put("oracle", "oracle.jdbc.OracleDriver");
         DRIVER_MAP.put("sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver");
     }
-    
-    @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
+
     
     public DataSource createDataSource(String url, String username, String password) {
         String dbType = detectDbType(url);

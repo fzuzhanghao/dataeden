@@ -1,12 +1,12 @@
 server.port:
   18080
 
-spring:
-  datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/postgres?currentSchema=medical_db
-    username: postgres
-    password: pwd123
-    driver-class-name: org.postgresql.Driver
+# spring:
+#   datasource:
+#     url: jdbc:postgresql://127.0.0.1:5432/postgres?currentSchema=medical_db
+#     username: postgres
+#     password: pwd123
+#     driver-class-name: org.postgresql.Driver
 
   # 可选：连接池配置
 #  hikari:
@@ -17,4 +17,8 @@ spring:
 #    max-lifetime: 60000
 #    connection-timeout: 30000
 deepsk:
+  api_url: https://api.deepseek.com/v1/chat/completions
   mykey: 
+  max_tokens: 5000
+  temperature: 0.3
+  model: deepseek-reasoner

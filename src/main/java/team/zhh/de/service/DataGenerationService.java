@@ -1,5 +1,7 @@
 package team.zhh.de.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -34,6 +36,8 @@ public class DataGenerationService {
     @Autowired
     private TempDatasourcePool tempDatasourcePool;
 
+    private static final Logger logger = LoggerFactory.getLogger(DataGenerationService.class);
+
     /**
      * 生成数据并插入表
      * @param url 数据库连接url
@@ -57,19 +61,19 @@ public class DataGenerationService {
         // 获取数据源并创建JdbcTemplate
         DataSource dataSource = tempDatasourcePool.getDataSource(url, username, password);
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-
         // 准备SQL
         String sql = prepareInsertSql(tableName, columns, url);
-        System.out.println("Debug: Generated SQL = " + sql);
-        System.out.println("Debug: Columns requiring generation = " + 
-            columns.stream().filter(ColumnMetadata::requiresGeneration).map(ColumnMetadata::name).collect(Collectors.joining(", ")));
+        logger.debug("Generated SQL = {}", sql);
+        logger.debug("Columns requiring generation = {}", columns.stream().filter(ColumnMetadata::requiresGeneration).map(ColumnMetadata::name).collect(Collectors.joining(", ")));
         
         List<String[]> dataList = dataEngine.generateAndInsertData(tableName, rows, columns);
-        System.out.println("Debug: Generated " + dataList.size() + " rows of data");
+        logger.debug("Generated {} rows of data", dataList.size());
         
         // 打印前几行数据用于调试
         if (!dataList.isEmpty()) {
-            System.out.println("Debug: First row data = " + String.join(", ", dataList.get(0)));
+            logger.debug("First row data = {}", String.join(", ", dataList.get(0)));
+        }else{
+            throw new Exception("无数据生成");
         }
         
         // 生成并插入数据
@@ -169,7 +173,7 @@ public class DataGenerationService {
             }
         } catch (NumberFormatException e) {
             // 如果类型转换失败，尝试作为字符串处理
-            System.out.println("Warning: Failed to convert value '" + value + "' to " + column.dataTypeCategory() + " for column " + column.name() + ". Using as string.");
+            logger.warn("Failed to convert value '{}' to {} for column {}. Using as string.", value, column.dataTypeCategory(), column.name());
             ps.setString(index, value);
         }
     }
