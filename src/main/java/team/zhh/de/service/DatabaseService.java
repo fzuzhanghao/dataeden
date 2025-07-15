@@ -94,6 +94,7 @@ public class DatabaseService {
                     int size = rs.getInt("COLUMN_SIZE");
                     int digit = rs.getInt("DECIMAL_DIGITS");
                     int nullableFlag = rs.getInt("NULLABLE");
+                    String remarks = rs.getString("REMARKS");
                     boolean isNullable = (nullableFlag == DatabaseMetaData.columnNullable);
                     boolean isAutoIncrement = "YES".equals(rs.getString("IS_AUTOINCREMENT"));
                     boolean isPrimaryKey = primaryKeys.contains(colName);
@@ -102,7 +103,7 @@ public class DatabaseService {
                     
                     columns.add(new ColumnMetadata(
                         colName, typeName, size, digit,
-                        isPrimaryKey, isAutoIncrement, isNullable
+                        isPrimaryKey, isAutoIncrement, isNullable,remarks
                     ));
                 }
             }

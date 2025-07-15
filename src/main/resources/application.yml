@@ -16,9 +16,10 @@ server.port:
 #    pool-name: HikariCP
 #    max-lifetime: 60000
 #    connection-timeout: 30000
-deepsk:
+aiengine:
   api_url: https://api.deepseek.com/v1/chat/completions
   mykey: 
   max_tokens: 5000
   temperature: 0.3
   model: deepseek-reasoner
+  

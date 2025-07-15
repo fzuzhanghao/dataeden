@@ -13,6 +13,7 @@ public record ColumnMetadata(
     int size,                   // 列长度/精度
     int decimalDigits,          // 小数位数（针对数字类型）
     boolean nullable,           // 是否允许NULL
+    String remarks,              // 备注
     String defaultValue,        // 默认值
     boolean autoIncrement,      // 是否自增列
     boolean primaryKey,         // 是否主键
@@ -21,8 +22,8 @@ public record ColumnMetadata(
 ) {
 
 
-    public ColumnMetadata(String colName, String typeName, int size, int digit, boolean isPrimaryKey, boolean isAutoIncrement, boolean isNullable) {
-        this(colName, typeName, size, digit, isNullable, null, isAutoIncrement, isPrimaryKey, false, determineDataTypeCategory(typeName));
+    public ColumnMetadata(String colName, String typeName, int size, int digit, boolean isPrimaryKey, boolean isAutoIncrement, boolean isNullable,String remarks) {
+        this(colName, typeName, size, digit, isNullable, remarks, null, isAutoIncrement, isPrimaryKey, false, determineDataTypeCategory(typeName));
     }
 
     // 数据类型分类枚举
@@ -42,6 +43,7 @@ public record ColumnMetadata(
                 rs.getInt("COLUMN_SIZE"),
                 rs.getInt("DECIMAL_DIGITS"),
                 rs.getString("IS_NULLABLE").equalsIgnoreCase("YES"),
+                rs.getString("REMARKS"),
                 rs.getString("COLUMN_DEF"),
                 isAutoIncrement(rs.getString("IS_AUTOINCREMENT")),
                 false, // 需通过额外查询设置

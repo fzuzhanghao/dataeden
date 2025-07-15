@@ -22,15 +22,15 @@ public class AIDataEngine implements IDataEngine {
     private static final Logger logger = LoggerFactory.getLogger(AIDataEngine.class);
     
     // 配置参数
-    @Value("${deepsk.api_url}")
-    private String DEEPSEEK_API_URL;
-    @Value("${deepsk.mykey}")
+    @Value("${aiengine.api_url}")
+    private String API_URL;
+    @Value("${aiengine.mykey}")
     private String API_KEY;
-    @Value("${deepsk.max_tokens}")
+    @Value("${aiengine.max_tokens}")
     private int maxTokens;
-    @Value("${deepsk.temperature}")
+    @Value("${aiengine.temperature}")
     private double temperature;
-    @Value("${deepsk.model}")
+    @Value("${aiengine.model}")
     private String model;
     private static final int BATCH_SIZE = 1000;
 
@@ -75,7 +75,7 @@ public class AIDataEngine implements IDataEngine {
     // 调用DeepSeek API生成批量数据
     private String generateBulkDataViaAPI(String prompt, 
                                                CloseableHttpClient httpClient) throws Exception {
-        HttpPost request = new HttpPost(DEEPSEEK_API_URL);
+        HttpPost request = new HttpPost(API_URL);
         request.setHeader("Authorization", "Bearer " + API_KEY);
         request.setHeader("Content-Type", "application/json");
 
@@ -134,7 +134,7 @@ public class AIDataEngine implements IDataEngine {
                 }
                 prompt.append(")");
             }
-            prompt.append(" - ").append(inferDataPurpose(col)).append("\n");
+            prompt.append(" - ").append(col.remarks()).append("\n");
         }
         
         prompt.append("\n严格要求：\n");
@@ -239,50 +239,4 @@ public class AIDataEngine implements IDataEngine {
         throw new DeepSeekException(detailedMessage);
     }
 
-    // 字段类型推断逻辑（扩展版）
-    private static String inferDataPurpose(ColumnMetadata column) {
-        String colName = column.name().toLowerCase();
-        String typeName = column.typeName().toLowerCase();
-        
-        // 基于列名的推断
-        if (colName.contains("email")) return "邮箱地址";
-        if (colName.contains("phone") || colName.contains("tel")) return "电话号码";
-        if (colName.contains("name")) return "姓名";
-        if (colName.contains("address")) return "地址";
-        if (colName.contains("city")) return "城市名";
-        if (colName.contains("country")) return "国家名";
-        if (colName.contains("code") || colName.contains("id")) return "唯一标识符";
-        if (colName.contains("date") || colName.contains("time")) return "日期时间";
-        if (colName.contains("price") || colName.contains("cost") || colName.contains("amount")) return "金额";
-        if (colName.contains("age")) return "年龄数字";
-        if (colName.contains("score") || colName.contains("rating")) return "评分";
-        if (colName.contains("description") || colName.contains("comment")) return "文本描述";
-        if (colName.contains("url") || colName.contains("link")) return "网址";
-        if (colName.contains("status")) return "状态标识";
-        if (colName.contains("active") || colName.contains("enabled")) return "布尔标志";
-        
-        // 基于数据类型的推断
-        switch (column.dataTypeCategory()) {
-            case INTEGER:
-                return "整数";
-            case FLOAT:
-                if ("NUMERIC".equalsIgnoreCase(typeName) || "DECIMAL".equalsIgnoreCase(typeName)) {
-                    return "小数，精度 " + column.size() + "," + column.decimalDigits();
-                }
-                return "小数";
-            case DATE:
-                return "日期，格式 YYYY-MM-DD";
-            case BOOLEAN:
-                return "布尔值 (true/false)";
-            case STRING:
-                if (column.size() > 0 && column.size() < 50) {
-                    return "短文本";
-                } else if (column.size() >= 50) {
-                    return "长文本";
-                }
-                return "文本";
-            default:
-                return "真实值";
-        }
-    }
 }
