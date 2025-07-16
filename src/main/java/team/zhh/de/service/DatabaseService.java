@@ -2,7 +2,8 @@ package team.zhh.de.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import team.zhh.de.config.DatabaseConfig;
+
+import lombok.extern.slf4j.Slf4j;
 import team.zhh.de.core.TempDatasourcePool;
 import team.zhh.base.model.ColumnMetadata;
 
@@ -12,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 
+@Slf4j
 @Service
 public class DatabaseService {
 
@@ -25,7 +27,7 @@ public class DatabaseService {
             tempDatasourcePool.getDataSource(url, username, password);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
             return false;
         }
     }
@@ -54,7 +56,7 @@ public class DatabaseService {
             if (schema == null) {
                 schema = conn.getSchema();
             }
-            System.out.println("Debug: Extracted schema = " + schema);
+            log.debug("Debug: Extracted schema = " + schema);
         }
         return schema;
     }
@@ -71,7 +73,7 @@ public class DatabaseService {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return tables;
     }
@@ -81,12 +83,12 @@ public class DatabaseService {
         DataSource dataSource = tempDatasourcePool.getDataSource(url, username, password);
         try {
             String schema = getCurrentSchema(dataSource, url);
-            System.out.println("Debug: Schema = " + schema + ", Table = " + tableName);
+            log.debug("Debug: Schema = " + schema + ", Table = " + tableName);
             
             try (Connection conn = dataSource.getConnection();
                  ResultSet rs = conn.getMetaData().getColumns(null, schema, tableName, null)) {
                 List<String> primaryKeys = getPrimaryKeys(conn, schema, tableName);
-                System.out.println("Debug: Primary keys = " + primaryKeys);
+                log.debug("Debug: Primary keys = " + primaryKeys);
                 
                 while (rs.next()) {
                     String colName = rs.getString("COLUMN_NAME");
@@ -99,7 +101,7 @@ public class DatabaseService {
                     boolean isAutoIncrement = "YES".equals(rs.getString("IS_AUTOINCREMENT"));
                     boolean isPrimaryKey = primaryKeys.contains(colName);
 
-                    System.out.println("Debug: Column = " + colName + ", Type = " + typeName + ", Size = " + size + ", Digits = " + digit);
+                    log.debug("Debug: Column = " + colName + ", Type = " + typeName + ", Size = " + size + ", Digits = " + digit);
                     
                     columns.add(new ColumnMetadata(
                         colName, typeName, size, digit,
@@ -108,8 +110,7 @@ public class DatabaseService {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error getting table columns: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error getting table columns: " + e.getMessage(),e);
         }
         return columns;
     }
