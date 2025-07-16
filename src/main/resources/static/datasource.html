@@ -422,8 +422,9 @@
                                 <div class="mb-3">
                                     <label class="form-label">生成引擎</label>
                                     <select class="form-control" v-model="engineType">
-                                        <option value="ai">AI智能生成</option>
-                                        <option value="random">随机生成</option>
+                                        <option value="commonAi">通用AI引擎</option>
+                                        <option value="volcengine">豆包火山引擎</option>
+                                        <option value="randomEngine">随机生成</option>
                                     </select>
                                 </div>
                                 
@@ -518,7 +519,7 @@
                 const previewColumns = ref([]);
                 const rowsToGenerate = ref(100);
                 const generationResult = ref('');
-                const engineType = ref('ai');
+                const engineType = ref('randomEngine');
                 
                 const dbConfig = ref({
                     url: 'jdbc:mysql://localhost:3306/test',

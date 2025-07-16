@@ -17,9 +17,9 @@ import org.apache.http.util.EntityUtils;
 import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Component("aiDataEngine")
-public class AIDataEngine implements IDataEngine {
-    private static final Logger logger = LoggerFactory.getLogger(AIDataEngine.class);
+@Component("commonAi")
+public class CommonDataEngine implements IDataEngine {
+    private static final Logger logger = LoggerFactory.getLogger(CommonDataEngine.class);
     
     // 配置参数
     @Value("${aiengine.api_url}")

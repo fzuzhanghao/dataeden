@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -25,12 +26,7 @@ public class DataGenerationService {
     private DatabaseService databaseService;
 
     @Autowired
-    @Qualifier("randomDataEngine")
-    private IDataEngine randomDataEngine;
-
-    @Autowired
-    @Qualifier("aiDataEngine")
-    private IDataEngine aiDataEngine;
+    private ApplicationContext applicationContext;
 
 
     @Autowired
@@ -51,12 +47,7 @@ public class DataGenerationService {
         List<ColumnMetadata> columns = databaseService.getTableColumns(url, username, password, tableName);
 
         // 选择数据生成引擎
-        IDataEngine dataEngine;
-        if ("AI".equalsIgnoreCase(engineType)) {
-            dataEngine = aiDataEngine;
-        } else {
-            dataEngine = randomDataEngine;
-        }
+        IDataEngine dataEngine = (IDataEngine) applicationContext.getBean(engineType);
 
         // 获取数据源并创建JdbcTemplate
         DataSource dataSource = tempDatasourcePool.getDataSource(url, username, password);

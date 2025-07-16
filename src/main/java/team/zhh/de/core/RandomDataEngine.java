@@ -6,7 +6,7 @@ import team.zhh.base.model.ColumnMetadata;
 import team.zhh.de.service.DatabaseService;
 import java.util.*;
 
-@Component("randomDataEngine")
+@Component("randomEngine")
 public class RandomDataEngine implements IDataEngine {
 
     @Autowired

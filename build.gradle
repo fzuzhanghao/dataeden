@@ -19,6 +19,7 @@ def jacksonVersion = '2.15.4'
 def mysqlVersion = '8.0.33'
 def postgresqlVersion = '42.6.0'
 def fastjsonVersion = '2.0.57'
+def volcengineVersion = '0.2.9'
 
 dependencies {
     // Spring Boot Starters
@@ -38,6 +39,8 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
     implementation "com.alibaba.fastjson2:fastjson2:$fastjsonVersion"
+
+    implementation "com.volcengine:volcengine-java-sdk-ark-runtime:$volcengineVersion"
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
